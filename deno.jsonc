@@ -1,0 +1,6 @@
+{
+  "tasks": {
+    "example": "deno test --allow-read",
+    "solve": "deno run --allow-read"
+  }
+}
