@@ -1,4 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import invariant from "npm:tiny-invariant";
 
 function solve1(input: string) {
   const lines = input.split("\n");
@@ -17,50 +18,47 @@ function solve1(input: string) {
   return sum;
 }
 
-// const DIGIT_STRINGS = {
-//   one: "1",
-//   two: "2",
-//   three: "3",
-//   four: "4",
-//   five: "5",
-//   six: "6",
-//   seven: "7",
-//   eight: "8",
-//   nine: "9",
-// } as const;
 const DIGIT_STRINGS = [
-  { name: "one", value: "1" },
-  { name: "two", value: "2" },
-  { name: "three", value: "3" },
-  { name: "four", value: "4" },
-  { name: "five", value: "5" },
-  { name: "six", value: "6" },
-  { name: "seven", value: "7" },
-  { name: "eight", value: "8" },
-  { name: "nine", value: "9" },
+  { name: "one", value: 1 },
+  { name: "two", value: 2 },
+  { name: "three", value: 3 },
+  { name: "four", value: 4 },
+  { name: "five", value: 5 },
+  { name: "six", value: 6 },
+  { name: "seven", value: 7 },
+  { name: "eight", value: 8 },
+  { name: "nine", value: 9 },
 ];
-
 function solve2(input: string) {
   const lines = input.split("\n");
-  const replaced = lines.map((line) => {
-    let newLine = line;
-    DIGIT_STRINGS.forEach((digit) => {
-      newLine = newLine.replaceAll(digit.name, digit.value);
-    });
-    return newLine;
-  });
 
-  const digitRegex = /\d/;
-  const digitsOnly = replaced.map((line) =>
-    line
-      .split("")
-      .filter((char) => digitRegex.test(char))
-      .join("")
-  );
-  const firstAndLastLines = digitsOnly.map((num) => `${num[0]}${num.at(-1)}`);
-  const sum = firstAndLastLines
-    .map(Number)
-    .reduce((acc, curr) => acc + curr, 0);
+  function getNums(line: string) {
+    const digitRegex = /\d/;
+
+    const nums = [];
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (digitRegex.test(char)) {
+        nums.push(Number(char));
+      } else {
+        for (const digitString of DIGIT_STRINGS) {
+          const substring = line.substring(i, i + digitString.name.length);
+          if (substring === digitString.name) {
+            nums.push(digitString.value);
+          }
+        }
+      }
+    }
+
+    return nums;
+  }
+
+  const nums = lines.map(getNums);
+  const firstAndLastNums = nums
+    .map((lineNums) => `${lineNums[0]}${lineNums.at(-1)}`)
+    .map(Number);
+
+  const sum = firstAndLastNums.reduce((acc, curr) => acc + curr, 0);
 
   return sum;
 }
