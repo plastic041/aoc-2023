@@ -56,38 +56,42 @@ function solve1(input: string) {
 function solve2(input: string) {
   const { directions, nodes } = parse(input);
 
-  function isEnded(nodes: string[]) {
-    return nodes.every((key) => key.endsWith("Z"));
-  }
+  const startNodes = Object
+    .keys(nodes)
+    .filter((name) => name.endsWith("A"))
+    .map((name) => ({ name, nodes: [name] }));
 
-  let count = 0;
-  let index = 0;
-  let currentNodes = Object.keys(nodes).filter((key) => key.endsWith("A"));
-  while (!isEnded(currentNodes)) {
-    check();
-  }
+  for (const startNode of startNodes) {
+    let index = 0;
+    while (startNode.nodes.at(-1)?.endsWith("Z") === false) {
+      const moddedIndex = index % directions.length;
+      const direction = directions[moddedIndex];
 
-  return count;
+      const currentNode = startNode.nodes.at(-1)!;
+      const nextNode = direction === "L"
+        ? nodes[currentNode].left
+        : nodes[currentNode].right;
 
-  function check() {
-    count++;
-    const moddedIndex = index % directions.length;
-    const direction = directions[moddedIndex];
+      invariant(nextNode !== undefined, "nextNode is undefined");
 
-    const newCurrentNodes: string[] = [];
+      startNode.nodes.push(nextNode);
 
-    for (const currentNode of currentNodes) {
-      const node = nodes[currentNode];
-      newCurrentNodes.push(direction === "L" ? node.left : node.right);
+      index++;
     }
-
-    currentNodes = newCurrentNodes;
-
-    if (count % 1000000 === 0) {
-      console.log(count, currentNodes);
-    }
-    index++;
   }
+
+  const countersToReachEnd = startNodes
+    .map((startNode) => startNode.nodes.length - 1);
+
+  // https://stackoverflow.com/a/49722579
+  function gcd(a: number, b: number): number {
+    return a ? gcd(b % a, a) : b;
+  }
+  function lcm(a: number, b: number): number {
+    return a * b / gcd(a, b);
+  }
+
+  return countersToReachEnd.reduce(lcm);
 }
 
 Deno.test("Test", async () => {
